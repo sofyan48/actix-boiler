@@ -1,0 +1,5 @@
+/target
+**/*.rs.bk
+mydb
+.env
+Cargo.lock
