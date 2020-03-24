@@ -23,7 +23,7 @@ cargo run
 ```sh
 cargo build --release
 cd target/release
-./canduma
+./actix-boiler
 ```
 
 ## Security
