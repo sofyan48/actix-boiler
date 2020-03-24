@@ -1,14 +1,15 @@
-version: "3"
+version: '3'
 services:
-  db:
+  database:
     image: "postgres"
     ports:
       - "5432:5432"
-    environment: 
-      - POSTGRES_PASSWORD=qazwsx123
-      - POSTGRES_USER=admin
-      - POSTGRES_DB=actix_test
+    environment:
+    - POSTGRES_USER=admin
+    - POSTGRES_PASSWORD=qazwsx123
+    - POSTGRES_DB=canduma
+    command: postgres -c 'max_connections=200'
     volumes:
-      - ./mydb:/var/lib/postgresql/data
+      - ./mydb:/var/lib/postgresql/data/
 volumes:
-    mydb:
+  mydb: 

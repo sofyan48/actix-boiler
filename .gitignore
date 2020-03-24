@@ -1,7 +1,4 @@
 /target
 **/*.rs.bk
-mydb
+/.idea/
 .env
-Cargo.lock
-
-.DS_Store

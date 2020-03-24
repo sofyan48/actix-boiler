@@ -1,30 +1,59 @@
-// #![feature(specialization)]
-extern crate actix;
-extern crate actix_web;
 #[macro_use]
 extern crate diesel;
-extern crate futures;
-extern crate r2d2;
-extern crate r2d2_diesel;
 #[macro_use]
 extern crate serde_derive;
-extern crate serde;
 
-use actix_web::server;
+mod cli_args;
+mod database;
+mod errors;
+mod graphql;
+mod jwt;
+mod schema;
+mod user;
 
-pub mod app;
-pub mod schema;
+use actix_identity::{CookieIdentityPolicy, IdentityService};
+use actix_web::{App, HttpServer, middleware};
 
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    dotenv::dotenv().ok();
+    std::env::set_var("RUST_LOG", "actix_web=info");
+    env_logger::init();
 
-fn main() {
-    let sys = actix::System::new("server");
+    let opt = {
+        use structopt::StructOpt;
+        cli_args::Opt::from_args()
+    };
 
-    let state = app::state::initialize();
+    let schema = std::sync::Arc::new(crate::graphql::model::create_schema());
+    let domain = opt.domain.clone();
+    let cookie_secret_key = opt.auth_secret_key.clone();
+    let secure_cookie = opt.secure_cookie;
+    let auth_duration = chrono::Duration::hours(i64::from(opt.auth_duration_in_hour));
+    let port = opt.port;
 
-    server::new(move || app::init::initialize(state.clone()))
-        .bind("127.0.0.1:8088")
-        .unwrap()
-        .start();
+    let server = HttpServer::new(move || {
+        App::new()
+            .data(database::pool::establish_connection(opt.clone()))
+            .data(schema.clone())
+            .data(opt.clone())
+            .wrap(middleware::Logger::default())
+            .wrap(IdentityService::new(
+                CookieIdentityPolicy::new(cookie_secret_key.as_bytes())
+                    .name("auth")
+                    .path("/")
+                    .domain(&domain)
+                    .max_age_time(auth_duration)
+                    .secure(secure_cookie),
+            ))
+            .configure(user::route)
+            .configure(graphql::route)
+    })
+    .bind(("0.0.0.0", port))
+    .unwrap()
+    .run();
 
-    let _ = sys.run();
+    eprintln!("Listening on 0.0.0.0:{}", port);
+
+    server.await
 }
