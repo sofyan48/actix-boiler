@@ -1,11 +1,10 @@
 [package]
-name = "canduma"
+name = "actix-boiler"
 version = "0.2.0"
 authors = [
-    "Julien Lenne <contact.lenne@gmail.com>",
-    "Sylvain Tedoldi <sylvain.foss@contact.tedoldi.fr>",
+    "Sofyan <meongbego@gmail.com>",
     ]
-edition = "2018"
+edition = "2020"
 
 [dependencies]
 dotenv = "0.15"
