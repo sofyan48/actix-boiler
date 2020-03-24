@@ -12,13 +12,11 @@ mod schema;
 mod user;
 
 use actix_identity::{CookieIdentityPolicy, IdentityService};
-use actix_web::{App, HttpServer, middleware};
+use actix_web::{App, HttpServer};
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
-    std::env::set_var("RUST_LOG", "actix_web=info");
-    env_logger::init();
 
     let opt = {
         use structopt::StructOpt;
@@ -37,7 +35,6 @@ async fn main() -> std::io::Result<()> {
             .data(database::pool::establish_connection(opt.clone()))
             .data(schema.clone())
             .data(opt.clone())
-            .wrap(middleware::Logger::default())
             .wrap(IdentityService::new(
                 CookieIdentityPolicy::new(cookie_secret_key.as_bytes())
                     .name("auth")
