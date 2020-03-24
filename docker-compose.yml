@@ -7,7 +7,7 @@ services:
     environment:
     - POSTGRES_USER=admin
     - POSTGRES_PASSWORD=qazwsx123
-    - POSTGRES_DB=canduma
+    - POSTGRES_DB=actix-boiler
     command: postgres -c 'max_connections=200'
     volumes:
       - ./mydb:/var/lib/postgresql/data/
